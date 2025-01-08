@@ -1,0 +1,14 @@
+[package]
+name = "bitcoiin"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "bitcoiin"
+
+[profile]
+dev = { panic = "abort" }
+release = { panic = "abort", lto = true, codegen-units = 1, strip = "symbols", opt-level = "s" }
+
+[dependencies.ogc-rs]
+git = "https://github.com/rust-wii/ogc-rs.git"
