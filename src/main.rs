@@ -7,18 +7,18 @@ use crate::display::Display;
 extern crate alloc;
 
 use embedded_graphics::{
-    mono_font::{ascii::FONT_6X10, MonoTextStyle},
-    pixelcolor::Rgb888,
-    prelude::*,
-    primitives::{PrimitiveStyle, Rectangle},
-    Drawable,
-    text::Text
+    image::Image, mono_font::{ascii::FONT_6X10, MonoTextStyle}, pixelcolor::Rgb888, prelude::*, primitives::{PrimitiveStyle, Rectangle}, text::Text, Drawable
 };
 
 use ogc_rs::prelude::*;
 
 #[start]
 fn main(_argc: isize, _argv: *const *const u8) -> isize {
+    let curdata = include_bytes!("../assets/Wii-Cursor.tga");
+
+    let curtga = Tga::from_slice(curdata).unwrap();
+    let curimage =Image::new(&curtga, Point::zero());
+
     let mut video = Video::init();
     Input::init(ControllerType::Gamecube);
     Input::init(ControllerType::Wii);

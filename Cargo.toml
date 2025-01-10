@@ -13,6 +13,7 @@ release = { panic = "abort", lto = true, codegen-units = 1, strip = "symbols", o
 [dependencies]
 embedded-graphics = "0.8.1"
 serde = { version = "1.0.217", default-features = false, features = ["alloc"] }
+tinytga = "0.5.0"
 
 [dependencies.ogc-rs]
 git = "https://github.com/rust-wii/ogc-rs.git"
