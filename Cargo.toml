@@ -10,5 +10,10 @@ name = "bitcoiin"
 dev = { panic = "abort" }
 release = { panic = "abort", lto = true, codegen-units = 1, strip = "symbols", opt-level = "s" }
 
+[dependencies]
+embedded-graphics = "0.8.1"
+serde = { version = "1.0.217", default-features = false, features = ["alloc"] }
+
 [dependencies.ogc-rs]
 git = "https://github.com/rust-wii/ogc-rs.git"
+features = ["ffi"]

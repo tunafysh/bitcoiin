@@ -1,6 +1,11 @@
 use std::process::Command;
 fn main() {
+	std::env::set_var("DEVKITPRO", "/opt/devkitpro");
+	std::env::set_var("DEVKITPPC", "/opt/devkitpro/devkitPPC");
+	let path = std::env::var("PATH").unwrap();
+	std::env::set_var("PATH", format!("/opt/devkitpro/tools/bin:{}:/opt/devkitpro/devkitPPC/bin", path));
 	let dkp_path = std::env::var("DEVKITPRO").expect("Please set $DEVKITPRO");
+	
 	println!("cargo:rustc-link-search=native={}/libogc/lib/wii", dkp_path);
 
 	//checks if the build folder exists. If it does, it deletes it.
