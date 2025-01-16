@@ -3,37 +3,34 @@
 
 extern crate alloc;
 use ogc_rs::prelude::*;
-use ogc_rs::println;
 
 #[start]
 fn main(_argc: isize, _argv: *const *const u8) -> isize {
-    // Initialise the video system
     let video = Video::init();
-
-    // Initialise the console, required for print.
+    Input::init(ControllerType::Gamecube);
+    Input::init(ControllerType::Wii);
+    let gcn_ctrl = Input::new(ControllerType::Gamecube, ControllerPort::One);
+    let wii_ctrl = Input::new(ControllerType::Wii, ControllerPort::One);
     Console::init(&video);
-
-    // Set up the video registers with the chosen mode.
-    Video::configure((&video.render_config).into());
-
-    // Tell the video hardware where our display memory is.
+    Video::configure(&video.render_config);
     unsafe {
         Video::set_next_framebuffer(video.framebuffer);
     }
-
-    // Make the display visible.
     Video::set_black(false);
-
-    // Flush the video register changes to the hardware.
     Video::flush();
-
-    // Wait for Video setup to complete.
     Video::wait_vsync();
 
-    println!("Hello, World!");
+    println!("Hello World!");
 
-    loop {
-        // Wait for the next frame.
+   loop {
+        Input::update(ControllerType::Gamecube);
+        Input::update(ControllerType::Wii);
+        if gcn_ctrl.is_button_down(Button::Start) {
+            break 0;
+        }
+        if wii_ctrl.is_button_down(Button::Home) {
+            break 0;
+        }
         Video::wait_vsync();
     }
 }
