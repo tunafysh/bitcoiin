@@ -29,12 +29,52 @@ void Initialise() {
 	if(rmode->viTVMode&VI_NON_INTERLACE) VIDEO_WaitVSync();
 }
 
+void init_network() {
+    int res;
+    char ip[16] = {0};
+	
+    printf("Initializing network...\n");
+    res = if_config(ip, NULL, NULL, true);
+    if (res < 0) {
+        printf("Network initialization failed!\n");
+        exit(1);
+    }
+    printf("Network initialized! IP address: %s\n", ip);
+}
+
+void create_socket() {
+    int sockfd;
+    struct sockaddr_in server_addr;
+
+    sockfd = net_socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+    if (sockfd < 0) {
+        printf("Socket creation failed!\n");
+        exit(1);
+    }
+
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(12345);
+    server_addr.sin_addr.s_addr = inet_addr("192.168.1.100");
+
+    if (net_connect(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+        printf("Socket connection failed!\n");
+        net_close(sockfd);
+        exit(1);
+    }
+
+    printf("Socket created and connected successfully!\n");
+    net_close(sockfd);
+}
+
 
 int main() {
  
 	Initialise();
- 
-	printf("Still trying to figure out the UI but eventually we'll get there\n");
+	init_network();
+	create_socket();
+
+
 
 	for(;;){
 		VIDEO_WaitVSync();
