@@ -5,6 +5,7 @@
 #include <ogcsys.h>
 #include <gccore.h>
 #include <wiiuse/wpad.h>
+#include <network.h>
 
 static u32 *xfb;
 static GXRModeObj *rmode;
@@ -19,7 +20,7 @@ void Initialise() {
 
 	xfb = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
 	console_init(xfb,20,20,rmode->fbWidth,rmode->xfbHeight,rmode->fbWidth*VI_DISPLAY_PIX_SZ);
- 
+	
 	VIDEO_Configure(rmode);
 	VIDEO_SetNextFramebuffer(xfb);
 	VIDEO_SetBlack(FALSE);
@@ -33,7 +34,11 @@ int main() {
  
 	Initialise();
  
-	printf("Hello World!\n");
- 
+	printf("Still trying to figure out the UI but eventually we'll get there\n");
+
+	for(;;){
+		VIDEO_WaitVSync();
+	}
+	
 	return 0;
 }
