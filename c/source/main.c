@@ -11,7 +11,7 @@ static u32 *xfb;
 static GXRModeObj *rmode;
 
 
-void Initialise() {
+void Init() {
   
 	VIDEO_Init();
 	PAD_Init();
@@ -29,20 +29,21 @@ void Initialise() {
 	if(rmode->viTVMode&VI_NON_INTERLACE) VIDEO_WaitVSync();
 }
 
-void init_network() {
+u32 init_network() {
     int res;
     char ip[16] = {0};
 	
     printf("Initializing network...\n");
-    res = if_config(ip, NULL, NULL, true);
+    res = if_config(ip, NULL, NULL, true, 1);
     if (res < 0) {
         printf("Network initialization failed!\n");
         exit(1);
     }
     printf("Network initialized! IP address: %s\n", ip);
+    return inet_addr(ip);
 }
 
-void create_socket() {
+void create_socket(in_addr_t ip, int port) {
     int sockfd;
     struct sockaddr_in server_addr;
 
@@ -54,8 +55,8 @@ void create_socket() {
 
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(12345);
-    server_addr.sin_addr.s_addr = inet_addr("192.168.1.100");
+    server_addr.sin_port = htons(port);
+    server_addr.sin_addr.s_addr = ip;
 
     if (net_connect(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
         printf("Socket connection failed!\n");
@@ -63,20 +64,25 @@ void create_socket() {
         exit(1);
     }
 
-    printf("Socket created and connected successfully!\n");
+    printf("Socket created at %s and port %d and connected successfully!\n", inet_ntoa(server_addr.sin_addr), port);
     net_close(sockfd);
 }
 
 
 int main() {
  
-	Initialise();
-	init_network();
-	create_socket();
+	Init();
+	in_addr_t addr = init_network();
+	create_socket(addr, 8307);
 
-
+    printf("Press HOME to exit\n");
 
 	for(;;){
+        WPAD_ScanPads();
+        u32 pressed = WPAD_ButtonsDown(0);
+        if (pressed & WPAD_BUTTON_HOME) {
+            break;
+        }
 		VIDEO_WaitVSync();
 	}
 	
