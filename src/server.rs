@@ -1,6 +1,4 @@
-use std::net::{TcpListener, TcpStream};
-use std::io::{Read, Write};
-use std::thread;
+use std::{io::{Read, Write}, net::{TcpListener, TcpStream}};
 use rand::Rng;
 use sha2::{Sha256, Digest};
 use owo_colors::OwoColorize;
@@ -72,9 +70,7 @@ fn main() {
                 );
 
                 // Spawn a new thread to handle the client
-                thread::spawn(move || {
-                    handle_client(stream);
-                });
+                handle_client(stream);
             }
             Err(e) => {
                 println!("{}", format!("Connection failed: {}", e).red().bold());
