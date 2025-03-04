@@ -70,7 +70,7 @@ fn main() {
     println!("{}", "Client started".blue().bold());
     println!("{}", "Checking internet connection".blue().bold());
     if check_internet() {
-        println!("{}", "Connected to server".green().bold());
+        println!("{}", "Connected to the internet".green().bold());
     } else {
         println!("{}", "No internet connection".red().bold());
         exit(1);
