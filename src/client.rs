@@ -1,7 +1,8 @@
 use owo_colors::OwoColorize;
 use dialoguer::{Input, theme::ColorfulTheme};
-use std::{net::TcpStream, process::exit, io::{Read, Write}};
+use std::{io::{Read, Write}, net::TcpStream, process::exit, thread};
 use sha2::{Digest, Sha256};
+use rand::Rng;
 
 mod structs;
 
@@ -22,8 +23,6 @@ impl structs::ClientBlock {
 
     // Mine for a valid nonce
     fn mine(&mut self) {
-        println!("{}", "Mining started...".blue().bold());
-
         loop {
             // Create a payload by combining the data and the current nonce
             let mut payload = self.data.clone();
@@ -35,9 +34,9 @@ impl structs::ClientBlock {
 
             // Compare the hash with the target
             if self.is_valid_hash(&hash2) {
-                println!(
+                print!(
                     "{}",
-                    format!("Valid nonce found: {}", self.nonce)
+                    format!("Valid nonce found: {}\n", self.nonce)
                         .green()
                         .bold()
                 );
@@ -61,11 +60,11 @@ impl structs::ClientBlock {
 }
 
 fn main() {
-    println!("{}"," _     _ _            _ _       ");
-    println!("{}","| |__ (_) |_ ___ ___ (_|_)_ __  ");
-    println!("{}","| '_ \\| | __/ __/ _ \\| | | '_ \\ ");
-    println!("{}","| |_) | | || (_| (_) | | | | | |");
-    println!("{}","|_.__/|_|\\__\\___\\___/|_|_|_| |_|");
+    println!("{}", " _     _ _            _ _       ".yellow().bold());
+    println!("{}", "| |__ (_) |_ ___ ___ (_|_)_ __  ".yellow().bold());
+    println!("{}", "| '_ \\| | __/ __/ _ \\| | | '_ \\ ".yellow().bold());
+    println!("{}", "| |_) | | || (_| (_) | | | | | |".yellow().bold());
+    println!("{}", "|_.__/|_|\\__\\___\\___/|_|_|_| |_|".yellow().bold());
 
     println!("{}", "Client started".blue().bold());
     println!("{}", "Checking internet connection".blue().bold());
@@ -81,43 +80,49 @@ fn main() {
         .interact_text()
         .unwrap();
 
-    let mut stream = match TcpStream::connect(&addr) {
-        Ok(stream) => {
-            println!("{}", "Connected to server".green().bold());
-            stream
-        }
-        Err(_) => {
-            println!("{}", "Failed to connect to server".red().bold());
-            exit(1);
-        }
-    };
+    loop {
+        let mut stream = match TcpStream::connect(&addr) {
+            Ok(stream) => {
+                stream
+            }
+            Err(_) => {
+                println!("{}", "Failed to connect to server".red().bold());
+                exit(1);
+            }
+        };
 
-    let mut buffer = [0; 1024];
-    match stream.read(&mut buffer) {
-        Ok(size) => {
-            let received_data = &buffer[..size];
-            let server_block: structs::ServerBlock = serde_json::from_slice(received_data).unwrap();
-            let mut client_block = structs::ClientBlock {
-                data: Vec::new(),
-                target: Vec::new(),
-                nonce: 0,
-            };
-        
-            // Parse data received from the server
-            client_block.parse_data(server_block);
-        
-            // Start mining
-            println!("{}", "Starting mining process".blue().bold());
-            client_block.mine();
-        
-            // Send the result back to the server
-            let result = client_block.to_json();
-            stream.write_all(result.as_bytes()).unwrap();
-            println!("{}", "Result sent to server".green().bold());        
-        }
-        Err(_) => {
-            println!("{}", "Failed to receive data from server".red().bold());
-            exit(1);
+        let mut buffer = [0; 1024];
+        match stream.read(&mut buffer) {
+            Ok(size) => {
+                let received_data = &buffer[..size];
+                let server_block: structs::ServerBlock = serde_json::from_slice(received_data).unwrap();
+                let mut client_block = structs::ClientBlock {
+                    data: Vec::new(),
+                    target: Vec::new(),
+                    nonce: 0,
+                };
+
+                // Parse data received from the server
+                client_block.parse_data(server_block);
+
+                // Start mining
+                println!("{}", "Mining...".yellow().bold());
+                let sleep_duration = rand::rng().random_range(5..=15);
+
+                // Sleep for a random duration between 1 to 5 seconds
+                thread::sleep(std::time::Duration::from_secs(sleep_duration));
+
+                client_block.mine();
+                
+                // Send the result back to the server
+                let result = client_block.to_json();
+                stream.write_all(result.as_bytes()).unwrap();
+                println!("{}", "Result sent to server".cyan().bold());
+            }
+            Err(_) => {
+                println!("{}", "Failed to receive data from server".red().bold());
+                exit(1);
+            }
         }
     }
 }
